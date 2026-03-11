@@ -44,9 +44,26 @@
   <!-- Área Principal (Model Viewer e Textos) -->
   <main class="flex-1 relative flex flex-col items-center justify-center">
     
-    <!-- Container do Visualizador 3D -->
-    <div id="model-container" class="absolute inset-0 w-full h-full">
-      <!-- O model-viewer será injetado aqui via JavaScript para forçar a recriação e evitar bugs de AR -->
+    <!-- Visualizador 3D -->
+    <div class="absolute inset-0 w-full h-full">
+      <model-viewer
+        id="mosquito-model"
+        ar
+        ar-modes="webxr scene-viewer quick-look"
+        camera-controls
+        auto-rotate
+        shadow-intensity="1"
+        exposure="1"
+      >
+        <!-- Botão de Realidade Aumentada customizado -->
+        <button
+          slot="ar-button"
+          class="absolute bottom-6 left-1/2 -translate-x-1/2 bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-bold py-3 px-6 md:py-4 md:px-8 rounded-full shadow-lg shadow-emerald-500/20 transition-all transform hover:scale-105 z-20 whitespace-nowrap flex items-center gap-2"
+        >
+          <i data-lucide="bug" class="w-5 h-5"></i>
+          <span>Ver em Realidade Aumentada</span>
+        </button>
+      </model-viewer>
     </div>
 
     <!-- Caixa de Informações (Overlay) -->
@@ -87,8 +104,7 @@
         shortTitle: 'Ovo',
         description: 'Ovos depositados em água parada.',
         icon: 'circle',
-        // Usando um modelo mais estável para AR (Avocado) como placeholder para o Ovo
-        modelSrc: 'https://modelviewer.dev/shared-assets/models/glTF-Sample-Models/2.0/Avocado/glTF-Binary/Avocado.glb',
+        modelSrc: 'https://modelviewer.dev/shared-assets/models/shishkebab.glb',
         color: 'text-amber-200',
       },
       {
@@ -97,8 +113,7 @@
         shortTitle: 'Larva',
         description: 'Vive na água e se movimenta rapidamente.',
         icon: 'activity',
-        // Usando um modelo mais estável para AR (Duck) como placeholder para a Larva
-        modelSrc: 'https://modelviewer.dev/shared-assets/models/glTF-Sample-Models/2.0/Duck/glTF-Binary/Duck.glb',
+        modelSrc: 'https://modelviewer.dev/shared-assets/models/Horse.glb',
         color: 'text-green-400',
       },
       {
@@ -124,7 +139,7 @@
     let activePhaseId = 'ovo';
 
     // Elementos do DOM
-    const modelContainer = document.getElementById('model-container');
+    const modelViewer = document.getElementById('mosquito-model');
     const overlayTitle = document.getElementById('overlay-title');
     const overlayDesc = document.getElementById('overlay-desc');
     const navContainer = document.getElementById('nav-container');
@@ -138,11 +153,11 @@
         const btn = document.createElement('button');
         
         // Classes base do Tailwind
-        btn.className = \`snap-center shrink-0 flex flex-col items-center justify-center w-20 h-20 rounded-xl transition-all duration-300 \${
+        btn.className = `snap-center shrink-0 flex flex-col items-center justify-center w-20 h-20 rounded-xl transition-all duration-300 ${
           isActive 
             ? 'bg-slate-800 border-2 border-emerald-500 shadow-lg shadow-emerald-500/20' 
             : 'bg-slate-900 border border-slate-800 hover:bg-slate-800/50'
-        }\`;
+        }`;
         
         // Evento de clique
         btn.onclick = () => setPhase(phase.id);
@@ -152,12 +167,12 @@
         const textColorClass = isActive ? 'text-slate-200' : 'text-slate-500';
 
         // Conteúdo do botão (Ícone + Texto)
-        btn.innerHTML = \`
-          <i data-lucide="\${phase.icon}" class="w-6 h-6 mb-1 \${iconColorClass}"></i>
-          <span class="text-[10px] font-medium text-center px-1 \${textColorClass}">
-            \${phase.shortTitle}
+        btn.innerHTML = `
+          <i data-lucide="${phase.icon}" class="w-6 h-6 mb-1 ${iconColorClass}"></i>
+          <span class="text-[10px] font-medium text-center px-1 ${textColorClass}">
+            ${phase.shortTitle}
           </span>
-        \`;
+        `;
         
         navContainer.appendChild(btn);
       });
@@ -171,30 +186,9 @@
       activePhaseId = id;
       const phase = phases.find(p => p.id === id);
       
-      // Para garantir que o AR funcione perfeitamente ao trocar de fase,
-      // recriamos o elemento model-viewer inteiro (equivalente ao "key" no React)
-      modelContainer.innerHTML = \`
-        <model-viewer
-          id="mosquito-model"
-          src="\${phase.modelSrc}"
-          alt="Modelo 3D da fase: \${phase.title}"
-          ar
-          ar-modes="webxr scene-viewer quick-look"
-          ar-scale="auto"
-          camera-controls
-          auto-rotate
-          shadow-intensity="1"
-          exposure="1"
-        >
-          <button
-            slot="ar-button"
-            class="absolute bottom-6 left-1/2 -translate-x-1/2 bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-bold py-3 px-6 md:py-4 md:px-8 rounded-full shadow-lg shadow-emerald-500/20 transition-all transform hover:scale-105 z-20 whitespace-nowrap flex items-center gap-2"
-          >
-            <i data-lucide="bug" class="w-5 h-5"></i>
-            <span>Ver em Realidade Aumentada</span>
-          </button>
-        </model-viewer>
-      \`;
+      // Atualizar o Visualizador 3D
+      modelViewer.src = phase.modelSrc;
+      modelViewer.alt = `Modelo 3D da fase: ${phase.title}`;
       
       // Atualizar a Caixa de Informações
       overlayTitle.textContent = phase.title;
@@ -207,6 +201,8 @@
     // Inicializar o App na primeira fase (Ovo)
     setPhase('ovo');
     
+    // Inicializar ícones estáticos (como o do botão de AR)
+    lucide.createIcons();
   </script>
 </body>
 </html>
