@@ -1,1 +1,208 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Ciclo de Vida do Aedes aegypti</title>
+  
+  <!-- Tailwind CSS via CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  
+  <!-- Lucide Icons via CDN -->
+  <script src="https://unpkg.com/lucide@latest"></script>
+  
+  <!-- Google Model Viewer via CDN -->
+  <script type="module" src="https://ajax.googleapis.com/ajax/libs/model-viewer/3.4.0/model-viewer.min.js"></script>
 
+  <style>
+    /* CSS customizado para esconder a barra de rolagem dos botões */
+    .hide-scrollbar::-webkit-scrollbar {
+      display: none;
+    }
+    .hide-scrollbar {
+      -ms-overflow-style: none;
+      scrollbar-width: none;
+    }
+    /* Garantir que o visualizador 3D ocupe todo o espaço */
+    model-viewer {
+      width: 100%;
+      height: 100%;
+      background-color: transparent;
+    }
+  </style>
+</head>
+<body class="flex flex-col h-screen bg-slate-950 text-slate-100 font-sans overflow-hidden">
+  
+  <!-- Cabeçalho (Header) -->
+  <header class="p-4 text-center z-10 bg-slate-900/80 backdrop-blur-md border-b border-slate-800">
+    <h1 class="text-xl md:text-2xl font-bold bg-gradient-to-r from-emerald-400 to-cyan-400 bg-clip-text text-transparent">
+      Ciclo de Vida do Aedes aegypti
+    </h1>
+    <p class="text-sm text-slate-400 mt-1">Explore as fases em 3D e Realidade Aumentada</p>
+  </header>
+
+  <!-- Área Principal (Model Viewer e Textos) -->
+  <main class="flex-1 relative flex flex-col items-center justify-center">
+    
+    <!-- Visualizador 3D -->
+    <div class="absolute inset-0 w-full h-full">
+      <model-viewer
+        id="mosquito-model"
+        ar
+        ar-modes="webxr scene-viewer quick-look"
+        camera-controls
+        auto-rotate
+        shadow-intensity="1"
+        exposure="1"
+      >
+        <!-- Botão de Realidade Aumentada customizado -->
+        <button
+          slot="ar-button"
+          class="absolute bottom-6 left-1/2 -translate-x-1/2 bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-bold py-3 px-6 md:py-4 md:px-8 rounded-full shadow-lg shadow-emerald-500/20 transition-all transform hover:scale-105 z-20 whitespace-nowrap flex items-center gap-2"
+        >
+          <i data-lucide="bug" class="w-5 h-5"></i>
+          <span>Ver em Realidade Aumentada</span>
+        </button>
+      </model-viewer>
+    </div>
+
+    <!-- Caixa de Informações (Overlay) -->
+    <div class="absolute top-6 left-6 right-6 md:left-auto md:right-6 md:w-72 bg-slate-900/80 backdrop-blur-md p-5 rounded-2xl border border-slate-800 shadow-2xl z-10 pointer-events-none">
+      <h2 id="overlay-title" class="text-xl font-bold mb-2 flex items-center gap-2">
+        <!-- Título injetado via JavaScript -->
+      </h2>
+      <p id="overlay-desc" class="text-slate-300 leading-relaxed text-base">
+        <!-- Descrição injetada via JavaScript -->
+      </p>
+      <div class="mt-3 text-xs text-slate-500 italic flex flex-col gap-2">
+        <p>* Modelos 3D ilustrativos. Gire e amplie para interagir.</p>
+      </div>
+    </div>
+  </main>
+
+  <!-- Barra de Navegação Inferior -->
+  <nav class="bg-slate-900 border-t border-slate-800 p-4 z-10">
+    <div class="max-w-4xl mx-auto">
+      <div id="nav-container" class="flex overflow-x-auto snap-x snap-mandatory hide-scrollbar gap-4 pb-2">
+        <!-- Botões injetados via JavaScript -->
+      </div>
+    </div>
+  </nav>
+
+  <!-- Rodapé (Footer) -->
+  <footer class="bg-slate-950 text-slate-500 text-center py-3 px-4 text-xs border-t border-slate-800/50 pb-safe z-10">
+    <p>Projeto educativo interativo. Juntos no combate ao mosquito da Dengue.</p>
+  </footer>
+
+  <!-- Lógica JavaScript -->
+  <script>
+    // Dados das Fases
+    const phases = [
+      {
+        id: 'ovo',
+        title: '1️⃣ Ovo',
+        shortTitle: 'Ovo',
+        description: 'Ovos depositados em água parada.',
+        icon: 'circle',
+        modelSrc: 'https://modelviewer.dev/shared-assets/models/shishkebab.glb',
+        color: 'text-amber-200',
+      },
+      {
+        id: 'larva',
+        title: '2️⃣ Larva',
+        shortTitle: 'Larva',
+        description: 'Vive na água e se movimenta rapidamente.',
+        icon: 'activity',
+        modelSrc: 'https://modelviewer.dev/shared-assets/models/Horse.glb',
+        color: 'text-green-400',
+      },
+      {
+        id: 'pupa',
+        title: '3️⃣ Pupa',
+        shortTitle: 'Pupa',
+        description: 'Fase de transformação do mosquito.',
+        icon: 'shield',
+        modelSrc: 'https://modelviewer.dev/shared-assets/models/RobotExpressive.glb',
+        color: 'text-orange-400',
+      },
+      {
+        id: 'adulto',
+        title: '4️⃣ Mosquito adulto',
+        shortTitle: 'Adulto',
+        description: 'Mosquito pronto para voar e se reproduzir.',
+        icon: 'bug',
+        modelSrc: 'https://modelviewer.dev/shared-assets/models/Astronaut.glb',
+        color: 'text-red-400',
+      }
+    ];
+
+    let activePhaseId = 'ovo';
+
+    // Elementos do DOM
+    const modelViewer = document.getElementById('mosquito-model');
+    const overlayTitle = document.getElementById('overlay-title');
+    const overlayDesc = document.getElementById('overlay-desc');
+    const navContainer = document.getElementById('nav-container');
+
+    // Função para renderizar os botões de navegação
+    function renderNav() {
+      navContainer.innerHTML = '';
+      
+      phases.forEach(phase => {
+        const isActive = phase.id === activePhaseId;
+        const btn = document.createElement('button');
+        
+        // Classes base do Tailwind
+        btn.className = `snap-center shrink-0 flex flex-col items-center justify-center w-20 h-20 rounded-xl transition-all duration-300 ${
+          isActive 
+            ? 'bg-slate-800 border-2 border-emerald-500 shadow-lg shadow-emerald-500/20' 
+            : 'bg-slate-900 border border-slate-800 hover:bg-slate-800/50'
+        }`;
+        
+        // Evento de clique
+        btn.onclick = () => setPhase(phase.id);
+
+        // Cores dinâmicas
+        const iconColorClass = isActive ? phase.color : 'text-slate-500';
+        const textColorClass = isActive ? 'text-slate-200' : 'text-slate-500';
+
+        // Conteúdo do botão (Ícone + Texto)
+        btn.innerHTML = `
+          <i data-lucide="${phase.icon}" class="w-6 h-6 mb-1 ${iconColorClass}"></i>
+          <span class="text-[10px] font-medium text-center px-1 ${textColorClass}">
+            ${phase.shortTitle}
+          </span>
+        `;
+        
+        navContainer.appendChild(btn);
+      });
+      
+      // Recarregar os ícones do Lucide para os novos botões criados
+      lucide.createIcons();
+    }
+
+    // Função para mudar a fase atual
+    function setPhase(id) {
+      activePhaseId = id;
+      const phase = phases.find(p => p.id === id);
+      
+      // Atualizar o Visualizador 3D
+      modelViewer.src = phase.modelSrc;
+      modelViewer.alt = `Modelo 3D da fase: ${phase.title}`;
+      
+      // Atualizar a Caixa de Informações
+      overlayTitle.textContent = phase.title;
+      overlayDesc.textContent = phase.description;
+      
+      // Re-renderizar a barra de navegação para atualizar as cores
+      renderNav();
+    }
+
+    // Inicializar o App na primeira fase (Ovo)
+    setPhase('ovo');
+    
+    // Inicializar ícones estáticos (como o do botão de AR)
+    lucide.createIcons();
+  </script>
+</body>
+</html>
